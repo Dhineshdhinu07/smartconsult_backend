@@ -13,6 +13,7 @@ A robust backend API for SmartConsult, built with Cloudflare Workers, Hono, and 
 - 🎯 Input Validation with Zod
 - 🔄 Error Handling
 - 🗄️ D1 Database Integration
+- 🌐 CORS Support for Frontend Integration
 
 ## 📋 Prerequisites
 
@@ -55,18 +56,39 @@ Start the development server:
 wrangler dev --persist-to .wrangler/state
 ```
 
-The API will be available at `Local host-since it is not deployed`
+The API will be available at `http://127.0.0.1:8787`
+
+### CORS Configuration
+
+The API is configured to accept requests from:
+- `http://localhost:3000`
+- `https://localhost:3000`
+
+If you need to allow requests from additional origins:
+1. Update the CORS configuration in `src/index.ts`
+2. Add your frontend URL to the `origin` array
+3. Update the `FRONTEND_URL` in your `.dev.vars` file
+
+Example CORS configuration:
+```typescript
+app.use('*', cors({
+  origin: ['http://localhost:3000', 'https://localhost:3000'],
+  credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+}));
+```
 
 ## 📚 API Documentation
 
-Access the Swagger UI documentation at: `localhost/docs`
-OpenAPI JSON specification: `localhost/openapi.json`
+Access the Swagger UI documentation at: `http://127.0.0.1:8787/docs`
+OpenAPI JSON specification: `http://127.0.0.1:8787/openapi.json`
 
 ## 🔑 Authentication
 
 ### First Admin Setup
 ```bash
-curl -X POST localhost/admin/setup/first-admin \
+curl -X POST http://127.0.0.1:8787/admin/setup/first-admin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@example.com",
@@ -78,7 +100,7 @@ curl -X POST localhost/admin/setup/first-admin \
 
 ### User Registration
 ```bash
-curl -X POST localhost/auth/register \
+curl -X POST http://127.0.0.1:8787/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -89,7 +111,7 @@ curl -X POST localhost/auth/register \
 
 ### User Login
 ```bash
-curl -X POST localhost/auth/login \
+curl -X POST http://127.0.0.1:8787/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -97,11 +119,30 @@ curl -X POST localhost/auth/login \
   }'
 ```
 
+### Get Current User
+```bash
+curl -X GET http://127.0.0.1:8787/auth/me \
+  -H "Authorization: Bearer your_token_here"
+```
+
+Response:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "user_id",
+    "email": "user@example.com",
+    "name": "Test User",
+    "role": "user"
+  }
+}
+```
+
 ## 📅 Booking Endpoints
 
 ### Create Booking
 ```bash
-curl -X POST localhost/api/booking \
+curl -X POST http://127.0.0.1:8787/api/booking \
   -H "Authorization: Bearer your_token_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -113,7 +154,7 @@ curl -X POST localhost/api/booking \
 
 ### List User's Bookings
 ```bash
-curl -X GET localhost/api/bookings \
+curl -X GET http://127.0.0.1:8787/api/bookings \
   -H "Authorization: Bearer your_token_here"
 ```
 
@@ -121,19 +162,19 @@ curl -X GET localhost/api/bookings \
 
 ### List All Bookings
 ```bash
-curl -X GET "localhost/admin/bookings?page=1&limit=10" \
+curl -X GET "http://127.0.0.1:8787/admin/bookings?page=1&limit=10" \
   -H "Authorization: Bearer admin_token_here"
 ```
 
 ### Get Booking Statistics
 ```bash
-curl -X GET localhost/admin/stats \
+curl -X GET http://127.0.0.1:8787/admin/stats \
   -H "Authorization: Bearer admin_token_here"
 ```
 
 ### Update Booking
 ```bash
-  curl -X PATCH localhost/admin/bookings/{bookingId} \
+curl -X PATCH http://127.0.0.1:8787/admin/bookings/{bookingId} \
   -H "Authorization: Bearer admin_token_here" \
   -H "Content-Type: application/json" \
   -d '{

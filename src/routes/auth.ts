@@ -9,6 +9,7 @@ import { sign } from 'hono/jwt';
 import bcrypt from 'bcryptjs';
 import { nanoid } from 'nanoid';
 import { HTTPException } from 'hono/http-exception';
+import { verifyAuth } from '../middleware/auth';
 
 // Input validation schemas
 const registerSchema = z.object({
@@ -192,6 +193,49 @@ authRouter.post('/register', zValidator('json', registerSchema), async (c) => {
     return c.json({
       success: false,
       error: 'Registration failed'
+    }, 500);
+  }
+});
+
+// Add /me endpoint to get current user
+authRouter.get('/me', verifyAuth, async (c) => {
+  try {
+    const user = c.get('user');
+    const db = drizzle(c.env.DB);
+
+    // Get fresh user data from database
+    const userData = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+      })
+      .from(users)
+      .where(eq(users.id, user.sub))
+      .get();
+
+    if (!userData) {
+      throw new HTTPException(404, { message: 'User not found' });
+    }
+
+    return c.json({
+      success: true,
+      data: userData
+    });
+
+  } catch (error) {
+    if (error instanceof HTTPException) {
+      return c.json({
+        success: false,
+        error: error.message
+      }, error.status);
+    }
+
+    console.error('Error fetching user:', error);
+    return c.json({
+      success: false,
+      error: 'Failed to fetch user data'
     }, 500);
   }
 });
