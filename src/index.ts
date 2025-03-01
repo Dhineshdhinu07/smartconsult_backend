@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import authRouter from './routes/auth';
 import bookingRouter from './routes/booking';
 import adminRouter from './routes/admin';
@@ -10,6 +11,7 @@ type Bindings = {
   DB: D1Database;
   JWT_SECRET: string;
   NODE_ENV?: string;
+  FRONTEND_URL: string;
 };
 
 // Define custom variables for the Hono context
@@ -19,6 +21,16 @@ type Variables = {
 
 // Initialize Hono app
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+// Add CORS middleware
+app.use('*', cors({
+  origin: ['http://localhost:3000', 'https://localhost:3000'],
+  credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+  maxAge: 600,
+}));
 
 // Add database middleware
 app.use('*', async (c, next) => {
