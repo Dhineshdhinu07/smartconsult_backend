@@ -33,6 +33,7 @@
     "hono": "^4.7.2",
     "jsonwebtoken": "^9.0.2",
     "nanoid": "^3.3.4",
+    "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
