@@ -15,6 +15,7 @@ export interface Bindings {
   JWT_SECRET: string;
   DB: D1Database;
   NODE_ENV?: string;
+  ADMIN_SETUP_KEY: string;
 }
 
 // Define custom variables for the Hono context

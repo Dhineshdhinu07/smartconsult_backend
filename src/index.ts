@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import authRouter from './routes/auth';
 import bookingRouter from './routes/booking';
+import adminRouter from './routes/admin';
 import type { D1Database } from '@cloudflare/workers-types';
 import { DrizzleD1Database, drizzle } from 'drizzle-orm/d1';
 
@@ -8,6 +9,7 @@ import { DrizzleD1Database, drizzle } from 'drizzle-orm/d1';
 type Bindings = {
   DB: D1Database;
   JWT_SECRET: string;
+  NODE_ENV?: string;
 };
 
 // Define custom variables for the Hono context
@@ -34,6 +36,7 @@ app.get('/', (c) => {
 // Mount routes
 app.route('/auth', authRouter);
 app.route('/api', bookingRouter);
+app.route('/admin', adminRouter);
 
 // Export for Cloudflare Workers
 export default {
