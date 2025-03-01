@@ -1,167 +1,211 @@
-# SmartConsult - Backend
+# SmartConsult Backend API
 
-🚀 The backend for the consultation booking system built with **Hono (Cloudflare Workers), Drizzle ORM, Cloudflare D1, and JWT authentication**.
+A robust backend API for SmartConsult, built with Cloudflare Workers, Hono, and D1 Database. This API provides authentication, booking management, and administrative features.
 
----
+## 🚀 Features
 
-## 🛠️ Tech Stack
+- 🔐 JWT-based Authentication
+- 👥 User Management (Registration & Login)
+- 📅 Booking System
+- 🔑 Admin Dashboard
+- 📊 Booking Statistics
+- 📝 OpenAPI/Swagger Documentation
+- 🎯 Input Validation with Zod
+- 🔄 Error Handling
+- 🗄️ D1 Database Integration
 
-- **Framework:** Hono (Cloudflare Workers)
-- **Database:** Drizzle ORM with Cloudflare D1
-- **Authentication:** JWT-based auth
-- **Validation:** Zod
-- **File Storage:** Cloudflare Storage
-- **Payments:** Cashfree API
-- **Meetings:** Zoho Meet API
+## 📋 Prerequisites
 
----
+- Node.js (v16 or higher)
+- npm or yarn
+- Wrangler CLI (`npm install -g wrangler`)
+- A Cloudflare account
 
-## 📈 Installation & Setup
+## 🛠️ Installation
 
-### 1️⃣ Clone the repository
-```sh
-git clone https://github.com/Dhineshdhinu07/smartconsult_backend.git
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/smartconsult_backend.git
 cd smartconsult_backend
 ```
 
-### 2️⃣ Initialize a New Hono Project
-```sh
-npm init -y
-npm install hono zod bcryptjs jsonwebtoken dotenv
+2. Install dependencies:
+```bash
+npm install
 ```
 
-### 3️⃣ Install Cloudflare Workers CLI (Wrangler)
-```sh
-npm install -g wrangler
-wrangler login
+3. Create a `.dev.vars` file in the project root with the following environment variables:
+```env
+JWT_SECRET=your_jwt_secret_here
+ADMIN_SETUP_KEY=your_admin_setup_key_here
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
 ```
 
-### 4️⃣ Install Drizzle ORM & Cloudflare D1 Adapter
-```sh
-npm install drizzle-orm @cloudflare/workers-types
-npm install drizzle-kit
+4. Initialize the D1 database:
+```bash
+wrangler d1 create smartconsult-db
+wrangler d1 execute smartconsult-db --file=./schema.sql
 ```
 
-### 5️⃣ Set Up Drizzle Configuration
-Create `drizzle.config.ts` in the project root:
-```ts
-export default {
-  schema: "./src/db/schema.ts",
-  out: "./drizzle",
-};
+## 🚀 Development
+
+Start the development server:
+```bash
+wrangler dev --persist-to .wrangler/state
 ```
 
-### 6️⃣ Define Database Schema
-Create `src/db/schema.ts`:
-```ts
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+The API will be available at `Local host-since it is not deployed`
 
-export const bookings = sqliteTable("bookings", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  date: text("date").notNull(),
-  fileUrl: text("file_url"),
-  paymentStatus: text("payment_status").default("pending"),
-  meetLink: text("meet_link"),
-  createdAt: integer("created_at").default(Date.now),
-});
+## 📚 API Documentation
+
+Access the Swagger UI documentation at: `localhost/docs`
+OpenAPI JSON specification: `localhost/openapi.json`
+
+## 🔑 Authentication
+
+### First Admin Setup
+```bash
+curl -X POST localhost/admin/setup/first-admin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "Admin@123",
+    "name": "Admin User",
+    "secretKey": "your_admin_setup_key_here"
+  }'
 ```
 
-### 7️⃣ Run Drizzle Migration
-```sh
-npx drizzle-kit push
+### User Registration
+```bash
+curl -X POST localhost/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "User@123",
+    "name": "Test User"
+  }'
 ```
 
-### 8️⃣ Create an Environment File (`.env`)
-```sh
-DATABASE_URL="your-cloudflare-d1-url"
-JWT_SECRET="your-secret-key"
-CASHFREE_API_KEY="your-api-key"
-ZOHO_MEET_API_KEY="your-api-key"
+### User Login
+```bash
+curl -X POST localhost/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "User@123"
+  }'
 ```
 
-### 9️⃣ Start the Development Server
-```sh
-wrangler dev
-```
-🔗 **Backend Running at:** `http://127.0.0.1:8787`
+## 📅 Booking Endpoints
 
----
-
-## 📈 API Endpoints
-
-### **Authentication**
-- `POST /auth/register` – Register a new user
-- `POST /auth/login` – Login and receive JWT token
-
-### **User Actions**
-- `POST /booking` – Book a consultation
-- `GET /bookings` – View user bookings
-- `PUT /booking/:id` – Edit a booking
-- `DELETE /booking/:id` – Delete a booking
-
-### **Admin Actions**
-- `GET /admin/bookings` – View all bookings
-- `PUT /admin/booking/:id` – Update booking status
-- `DELETE /admin/booking/:id` – Delete a booking
-
----
-
-## ✅ Testing
-To test API endpoints:
-```sh
-npx wrangler dev
+### Create Booking
+```bash
+curl -X POST localhost/api/booking \
+  -H "Authorization: Bearer your_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Booking",
+    "date": "2024-03-25T14:30",
+    "amount": 1000
+  }'
 ```
 
----
+### List User's Bookings
+```bash
+curl -X GET localhost/api/bookings \
+  -H "Authorization: Bearer your_token_here"
+```
+
+## 👑 Admin Endpoints
+
+### List All Bookings
+```bash
+curl -X GET "localhost/admin/bookings?page=1&limit=10" \
+  -H "Authorization: Bearer admin_token_here"
+```
+
+### Get Booking Statistics
+```bash
+curl -X GET localhost/admin/stats \
+  -H "Authorization: Bearer admin_token_here"
+```
+
+### Update Booking
+```bash
+  curl -X PATCH localhost/admin/bookings/{bookingId} \
+  -H "Authorization: Bearer admin_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "success",
+    "meetLink": "https://meet.example.com/123"
+  }'
+```
+
+## 🏗️ Project Structure
+
+```
+smartconsult_backend/
+├── src/
+│   ├── index.ts           # Application entry point
+│   ├── schema/           # Database schema definitions
+│   ├── routes/           # API route handlers
+│   ├── middleware/       # Custom middleware
+│   └── utils/           # Utility functions
+├── .dev.vars            # Development environment variables
+├── wrangler.toml        # Wrangler configuration
+└── package.json         # Project dependencies
+```
+
+## 🔒 Security Features
+
+- Password hashing with bcrypt
+- JWT-based authentication
+- Input validation with Zod
+- Role-based access control
+- Environment variable management
+- Error handling with proper status codes
+
+## 🧪 Error Handling
+
+The API uses a standardized error response format:
+```json
+{
+  "error": "Error message",
+  "details": "Additional error details (development only)",
+  "code": "ERROR_CODE"
+}
+```
+
+## 📦 Dependencies
+
+- `hono`: Web framework
+- `@hono/zod-validator`: Input validation
+- `drizzle-orm`: SQL toolkit
+- `bcryptjs`: Password hashing
+- `nanoid`: ID generation
+- `zod`: Schema validation
+- `@hono/swagger-ui`: API documentation
 
 ## 🚀 Deployment
 
-To deploy to Cloudflare Workers:
-```sh
+1. Configure your Cloudflare account:
+```bash
+wrangler login
+```
+
+2. Update `wrangler.toml` with your production settings
+
+3. Deploy to Cloudflare Workers:
+```bash
 wrangler publish
 ```
-This will deploy the backend to **Cloudflare Workers**.
 
----
+## 🤝 Contributing
 
-## 📈 Features
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-- 📝 **User Authentication** (JWT-based login/register)
-- 📅 **Consultation Booking** (File upload + Payment)
-- 🔎 **Search, Filter, and Pagination** (Bookings List)
-- ⚡ **Admin Dashboard** (Manage bookings, edit, delete)
-- 💳 **Payment Processing** (Cashfree API)
-- 🎥 **Meeting Integration** (Zoho Meet API)
-- 🌚 **Dark Mode Toggle** (Optional)
-
----
-
-## 🛠️ Troubleshooting
-
-🤔 **Database connection issues?**  
-Check `.env` file and ensure `DATABASE_URL` is correctly set.
-
-🤔 **Wrangler not working?**  
-Try reinstalling:
-```sh
-npm install -g wrangler
-```
-
-🤔 **Drizzle migration errors?**  
-Try running:
-```sh
-npx drizzle-kit push --force
-```
-
----
-
-## 📄 Contributions
-1. Fork the repo
-2. Create a new branch (`git checkout -b feature-branch`)
-3. Commit your changes (`git commit -m "Added new feature"`)
-4. Push to GitHub (`git push origin feature-branch`)
-5. Open a **Pull Request**
-
----
