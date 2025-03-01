@@ -1,9 +1,4 @@
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { prettyJSON } from 'hono/pretty-json';
-import { jwt } from 'hono/jwt';
-import { DrizzleD1Database, drizzle } from 'drizzle-orm/d1';
-import { eq } from 'drizzle-orm';
 import authRouter from './routes/auth';
 import type { D1Database } from '@cloudflare/workers-types';
 
@@ -15,11 +10,6 @@ type Bindings = {
 
 // Initialize Hono app
 const app = new Hono<{ Bindings: Bindings }>();
-
-// Middleware
-app.use('*', cors());
-app.use('*', prettyJSON());
-
 // Basic route
 app.get('/', (c) => {
   return c.json({

@@ -29,11 +29,16 @@
     "@hono/zod-validator": "^0.1.11",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.7",
-    "drizzle-kit": "^0.30.5",
     "drizzle-orm": "^0.40.0",
     "hono": "^4.7.2",
     "jsonwebtoken": "^9.0.2",
     "nanoid": "^3.3.4",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "drizzle-kit": "^0.30.5",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.32.0"
   }
 }
